@@ -37,6 +37,25 @@ extension UIImageView{
         }
     }
     
+    func setImageFromURls(stringImageUrl url: String){
+//        let queue = DispatchQueue(label: "com.concurrency.imageQueue")
+        let queue = DispatchQueue(label: "com.concurrency,imageQueue",
+                                  qos: DispatchQoS.userInitiated,
+                                  attributes: DispatchQueue.Attributes.concurrent,
+                                  autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.workItem,
+                                  target:DispatchQueue.global())
+        
+        queue.async() { () -> Void in
+            if let url = NSURL(string: url) {
+                if let data = NSData(contentsOf: url as URL) {
+                    DispatchQueue.main.sync {
+                        self.image = UIImage(data: data as Data)
+                    };
+                }
+            }
+        }
+    }
+    
     func setImageFromURL(stringImageUrl url: String){
         queue = OperationQueue()
         queue.addOperation { () -> Void in
@@ -64,7 +83,7 @@ extension UIImageView{
         }
         
         operation.completionBlock = {
-            print("Operation 1 completed")
+            print("Operation 1 completed, cancelled:\(operation.isCancelled) ")
         }
         
         queue.addOperation(operation)
@@ -84,6 +103,8 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var sliderValueLabel: UISlider!
     
+    var queue = OperationQueue()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -96,13 +117,13 @@ class ViewController: UIViewController {
 
     @IBAction func didClickOnStart(_ sender: Any) {
 
-        self.imageView1.setImageFromURLs(stringImageUrl: imageURLs[0])
+        self.imageView1.setImageFromURls(stringImageUrl: imageURLs[0])
         
-        self.imageView2.setImageFromURL(stringImageUrl: imageURLs[1])
+        self.imageView2.setImageFromURls(stringImageUrl: imageURLs[1])
         
-        self.imageView3.setImageFromURl(stringImageUrl: imageURLs[2])
+        self.imageView3.setImageFromURls(stringImageUrl: imageURLs[2])
         
-        self.imageView4.setImageFromURl(stringImageUrl: imageURLs[3])
+        self.imageView4.setImageFromURls(stringImageUrl: imageURLs[3])
         
 //        let img4 = Downloader.downloadImageWithURL(url: imageURLs[3])
 //        self.imageView4.image = img4
@@ -110,7 +131,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func didClickOnCancel(_ sender: Any) {
-        
+        self.queue.cancelAllOperations()
     }
     
     @IBAction func sliderValueChanged(_ sender: Any) {
