@@ -11,6 +11,7 @@ import UIKit
 let imageURLs = ["http://www.planetware.com/photos-large/F/france-paris-eiffel-tower.jpg", "http://adriatic-lines.com/wp-content/uploads/2015/04/canal-of-Venice.jpg", "http://www.planetware.com/photos-large/F/france-paris-eiffel-tower.jpg", "http://adriatic-lines.com/wp-content/uploads/2015/04/canal-of-Venice.jpg"]
 
 var queue = OperationQueue()
+let dispatchGroup = DispatchGroup()
 
 class Downloader {
     
@@ -39,6 +40,7 @@ extension UIImageView{
     
     func setImageFromURls(stringImageUrl url: String){
 //        let queue = DispatchQueue(label: "com.concurrency.imageQueue")
+        
         let queue = DispatchQueue(label: "com.concurrency,imageQueue",
                                   qos: DispatchQoS.userInitiated,
                                   attributes: DispatchQueue.Attributes.concurrent,
@@ -50,6 +52,7 @@ extension UIImageView{
                 if let data = NSData(contentsOf: url as URL) {
                     DispatchQueue.main.sync {
                         self.image = UIImage(data: data as Data)
+                        dispatchGroup.leave()
                     };
                 }
             }
@@ -105,6 +108,7 @@ class ViewController: UIViewController {
     
     var queue = OperationQueue()
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -117,13 +121,22 @@ class ViewController: UIViewController {
 
     @IBAction func didClickOnStart(_ sender: Any) {
 
+        dispatchGroup.enter()
         self.imageView1.setImageFromURls(stringImageUrl: imageURLs[0])
         
+        dispatchGroup.enter()
         self.imageView2.setImageFromURls(stringImageUrl: imageURLs[1])
         
+        dispatchGroup.enter()
         self.imageView3.setImageFromURls(stringImageUrl: imageURLs[2])
         
+        dispatchGroup.enter()
         self.imageView4.setImageFromURls(stringImageUrl: imageURLs[3])
+        
+        dispatchGroup.notify(queue: .main) {            
+            self.view.backgroundColor = UIColor.lightGray
+            print("All functions complete 👍")
+        }
         
 //        let img4 = Downloader.downloadImageWithURL(url: imageURLs[3])
 //        self.imageView4.image = img4
