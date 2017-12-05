@@ -90,7 +90,6 @@ extension UIImageView{
         }
         
         queue.addOperation(operation)
-        
     }
 }
 
@@ -133,7 +132,7 @@ class ViewController: UIViewController {
         dispatchGroup.enter()
         self.imageView4.setImageFromURls(stringImageUrl: imageURLs[3])
         
-        dispatchGroup.notify(queue: .main) {            
+        dispatchGroup.notify(queue: .main) {
             self.view.backgroundColor = UIColor.lightGray
             print("All functions complete 👍")
         }
